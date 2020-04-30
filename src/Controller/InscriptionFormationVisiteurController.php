@@ -30,90 +30,90 @@ class InscriptionFormationVisiteurController extends AbstractController
         /**
          * @Route("/inscriptionFormationVisiteur/{id}", name="app_inscrit_ajouter")
          */
+        
         public function inscriptionLesFormationsV($id, ObjectManager $manager) {
 
-            // Récupération de l'entity manager 
-            $inscription= $this->getDoctrine()->getRepository(Inscription::class)->find(['id'=>$id]);//cherche l'id de la formation
+            $messageInscription = null;
+            $message = null;
+            $lstInscription = $this->getDoctrine()->getRepository(Inscription::class);  //cherche l'id de la formation
+            $formation = $this->getDoctrine()->getRepository(Formation::class)->find($id);
+            $condition = $lstInscription->findOneBy(['formation' => $formation]);
+            $visiteurId= $this->get('session')->get('visiteurId');
+            $visiteur = $this->getDoctrine()->getRepository(Visiteur::class)->find($visiteurId);  
 
-                                  
-      
-            
-            $inscription->setStatut('E');        //modifie statut en cours
+            if ($condition) {
 
-            $manager->persist($inscription);    //Signale à la Doctrine qu'on veut supprimer l'entité en argument de la base de données
-            
-            $manager->flush();                 //enregistre la formation dans la base de donnée
-            $message = "Inscription effectuée"; 
-
-             //renvoie des données à la vue grâce aux array
-            return $this->render('registration/inscriptionvalide.html.twig',array('inscription'=>$inscription, 'message' => $message));
-            }
-
-
-        /**
-        * @Route("/acceptationInscription/{id}", name="app_acceptationInscription")
-        */
-        public function afficheLaFormationDuVisiteurInscrit($id) {
-
-            $inscription = $this->getDoctrine()->getRepository(Inscription::class)->find($id); //cherche id inscription         
-            $em->$this->getDoctrine()->getManager();
-            $inscription->setStatut('A');       //statut est accepté
-     
-            $em->persist($inscription);
-            $em->flush();
-            return $this->redirectToRoute('app_inscription_afficher');
+                
+                $message ="Vous êtes déjà inscrit à cette formation !";
+           
+    
+            // Récupération de l'entity manager            
         }
-         /**
-         * @Route("/refuser/{id}", name="app_refuserInscription")
-         */
-    public function refuserInscription($id, ObjectManager $manager)
+            else {
+
+           $messageInscription = "Inscription effectuée ! "; 
+            $inscription = new Inscription(); 
+
+            $inscription->setVisiteur($visiteur); 
+            $inscription->setStatut('E');        //modifie statut en cours
+            $inscription->setFormation($formation);
+            $manager->persist($inscription);    //Signale à la Doctrine qu'on veut supprimer l'entité en argument de la base de données
+            $manager->flush();                 //enregistre la formation dans la base de donnée
+           
+        }
+             //renvoie des données à la vue grâce aux array
+            return $this->render('gestion_formation/inscription_formation.html.twig',array('ensFormation'=>$formation,'message'=>$message, 'inscriptionMsg'=>$messageInscription ,'unVisiteur'=>$visiteur));
+            }
+    
+    /**
+     * @Route("/affListeInscriptionEnCours/", name="aff_inscription")
+     */
+    public function afficheLesInscriptions() //liste inscription en cours 
+    {
+     
+        $listeInscription = $this->getDoctrine()->getRepository(Inscription::class);
+        $statut = $listeInscription->findBy(['statut' => "E"]);
+        if(!$statut){
+            $message = "Aucune inscription en cours !";
+        }
+        else{
+            $message = null;
+        }
+        return $this->render('gestion_formation/listeInscription.html.twig', array('lesInscriptions'=>$statut,'message'=>$message));
+    }
+
+    
+
+     /**
+     * @Route("/refuserInscription/{id}", name="app_refuserInscription")
+     */
+    public function refuserInscriptionFormation($id, ObjectManager $manager) //refuser inscription
     {
         $inscription = $this->getDoctrine()->getRepository(Inscription::class)->find($id);
         $em = $this->getDoctrine()->getManager();
-        $inscription->setStatut("R");
+        $inscription->setStatut("R"); //statut refusé
         $em->persist($inscription);
         $em->flush();
-        return $this->redirectToRoute('aff_inscription');
+
+        return $this->redirectToRoute('app_aff_Aformation');
     }
 
-        /**
-         * @Route("/ajoutInscription", name="app_inscription_ajouter")
-         */
+         /**
+        * @Route("/acceptationInscription/{id}", name="app_acceptationInscription")
+        */
 
-        public function ajoutInscription(EntityManagerInterface $em, Request $request){ 
-            
-                $inscription= new Inscription();
-            
-            //création du formulaire 
-            $form=$this->createForm(InscriptionFormation::class,$inscription);
-            $form->handleRequest($request);
- 
-            if ($form->isSubmitted() && $form->isValid()) {// va effectuer la requête d'UPDATE en base de données
-             
-                 //création d'une nouvelle formation
-                 //récupération des dates du début 
-                 $em=$this->getdoctrine()->getManager();
-                $inscription->getVisiteur(); //récupération nombres heures
-                ; //récupération du département 
-                
-                //cela va persister dans la formation 
-                $em->persist($inscription);
-                //enregistrement dans la base de données
-                $em->flush();
-                $this->addFlash('success','Inscription bien effectué !');
-                //redirection vers la page donnée 
-                return $this->redirectToRoute('app_inscription_ajouter')
-               
-                ;
-            
-            }
-        
-            return $this->render('registration/afficheFormationRestante.html.twig', array(
-                'form' => $form->createView(),'inscription'=>$inscription,)) //le createView permet de créer un twig 
-            
-            ;
-            
+        public function acceptationInscriptionFormation($id, ObjectManager $manager) //refuser inscription
+        {
+            $inscription = $this->getDoctrine()->getRepository(Inscription::class)->find($id);
+            $em = $this->getDoctrine()->getManager();
+            $inscription->setStatut("A"); //statut refusé
+            $em->persist($inscription);
+            $em->flush();
+            $this->addFlash('success','Inscription Enregistrée !');
+    
+            return $this->redirectToRoute('app_aff_Aformation');
         }
+
 
     /**
      * @Route("/deconnexionVisiteur/", name="app_deconnexionV")
@@ -129,15 +129,12 @@ class InscriptionFormationVisiteurController extends AbstractController
      * @Route("/deconnexionEmploye/", name="app_deconnexionE")
      */
 
-    public function deconnexionE(){
+    public function deconnexionE() {
 
         $session = $this->container->get('session');
         $session->invalidate();
         return $this->redirectToRoute('app_user_registrationEmploye');
     }
-        
-    
-
 }
            
 

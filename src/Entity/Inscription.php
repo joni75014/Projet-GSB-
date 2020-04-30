@@ -35,6 +35,11 @@ class Inscription
         return $this->id;
     }
 
+    public function __toString()
+    {
+        return (string) $this->id;
+    } 
+    
     public function getStatut(): ?string
     {
         return $this->statut;
@@ -70,10 +75,5 @@ class Inscription
 
         return $this;
     }
-
-    
-
-    
-
    
 }

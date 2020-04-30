@@ -19,6 +19,7 @@ use Symfony\Component\Form\FormTypeInterface;
 
 
 
+
 class GestionFormationController extends AbstractController
 {
   
@@ -115,7 +116,7 @@ class GestionFormationController extends AbstractController
          * @Route("/affFormationVisiteur", name="app_aff_AformationVisiteur")
          */
 
-        public function afficheLesFormationsV() {
+        public function afficheLesFormationsV() { //peut etre id aff
             
             // Récupération de l'entity manager
             $formation= $this->getDoctrine()->getRepository(Formation::class)->findall(); //va retourner toutes les formations dans la collection

@@ -36,6 +36,11 @@ class Visiteur
      */
     private $prenom;
  
+    public function __toString()
+    {
+        return (string) $this->id;
+    }
+
     public function __construct()
     {
         $this->visiteur = new ArrayCollection();

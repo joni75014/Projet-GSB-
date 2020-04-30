@@ -51,6 +51,11 @@
      {
          return $this->id;
      }
+
+     public function __toString()
+    {
+        return (string) $this->id;
+    } 
   
      public function getDateDebut(): ?\DateTimeInterface
      {
