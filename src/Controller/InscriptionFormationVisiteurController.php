@@ -33,8 +33,7 @@ class InscriptionFormationVisiteurController extends AbstractController
         
         public function inscriptionLesFormationsV($id, ObjectManager $manager) {
 
-            $messageInscription = null;
-            $message = null;
+            $message2 = null;
             $lstInscription = $this->getDoctrine()->getRepository(Inscription::class);  //cherche l'id de la formation
             $formation = $this->getDoctrine()->getRepository(Formation::class)->find($id);
             $condition = $lstInscription->findOneBy(['formation' => $formation]);
@@ -44,25 +43,28 @@ class InscriptionFormationVisiteurController extends AbstractController
             if ($condition) {
 
                 
-                $message ="Vous êtes déjà inscrit à cette formation !";
+                $message2 ="Vous êtes déjà inscrit à cette formation !";
            
     
             // Récupération de l'entity manager            
         }
             else {
 
-           $messageInscription = "Inscription effectuée ! "; 
+            
             $inscription = new Inscription(); 
 
             $inscription->setVisiteur($visiteur); 
             $inscription->setStatut('E');        //modifie statut en cours
             $inscription->setFormation($formation);
             $manager->persist($inscription);    //Signale à la Doctrine qu'on veut supprimer l'entité en argument de la base de données
-            $manager->flush();                 //enregistre la formation dans la base de donnée
+            $manager->flush(); //enregistre la formation dans la base de donnée
+
+            $this->addFlash('success','Inscription Effectuée !');             
            
         }
+
              //renvoie des données à la vue grâce aux array
-            return $this->render('gestion_formation/inscription_formation.html.twig',array('ensFormation'=>$formation,'message'=>$message, 'inscriptionMsg'=>$messageInscription ,'unVisiteur'=>$visiteur));
+            return $this->render('gestion_formation/inscription_formation.html.twig',array('ensFormation'=>$formation,'message2'=>$message2,'unVisiteur'=>$visiteur));
             }
     
     /**
